@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerenciador de Arquivos por Tema</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #252525;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 70px;
+      left: 0;
+      width: 240px;
+      height: calc(100% - 70px);
+      background: #797979;
+      border: 5px solid #000000;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      margin-top: 0;
+      color: #c9c9c9;
+      margin-left: 70PX;
+      font-size: 18px;
+    }
+
+    .tema {
+      cursor: pointer;
+      padding: 8px;
+      background: #505050;
+      margin-bottom: 5px;
+      color: #ffffff;
+      border: #000000 2px solid;
+      border-radius: 10px;
+    }
+
+    .tema:hover {
+      background-color: #000000;
+      border: 2px solid #0a17cf;
+    }
+
+    .viewer {
+      margin-left: 240px;
+      margin-top: 70px;
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .preview {
+      width: 200px;
+      text-align: center;
+      color: #ffffff;
+      background: #141414;
+      border-radius: 10px;
+      margin-bottom: 30px; /* Espaço entre previews */
+    }
+
+    .preview embed,
+    .preview img {
+      width: 100%;
+      height: 260px;
+     display: block;
+      margin-bottom: 30px; /* Espaço entre a imagem e o título */
+      object-fit: cover;
+      border: 2px solid #0213ff;
+      border-radius: 10px;
+    }
+
+    .preview-title {
+      margin-top: 8px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<!-- Container de abas -->
+<div id="tabContainer" style="position: fixed; top: 70px; left: 240px; right: 0; height: 30px; background: #1a1a1a; color: white; display: none; z-index: 1000; align-items: center; padding-left: 10px; gap: 5px;" class="tabs-bar"></div>
+
+<!-- Container dos iframes -->
+<div id="iframeContainer" style="position: fixed; top: 100px; left: 240px; right: 0; bottom: 0; background: #000; display: none; overflow: hidden;"></div>
+
+  <!-- Sidebar com os temas -->
+  <div class="sidebar">
+    <h3>Temas</h3>
+    <div class="tema" onclick="mostrarArquivos('todos')">📚TODOS OS TEMAS</div>
+<hr>
+    <div class="tema" onclick="mostrarArquivos('tema1')">📚1000 ESBOÇO E SERMÕES</div>
+    <div class="tema" onclick="mostrarArquivos('tema2')">📚BIBLIA POR MAPAS</div>
+    <div class="tema" onclick="mostrarArquivos('tema3')">📚BIBLIA DE ESTUDO</div>
+    <div class="tema" onclick="mostrarArquivos('tema4')">📚COMENTARIOS BIBLICOS</div>
+    <div class="tema" onclick="mostrarArquivos('tema5')">📚CURSOS TEOLOGICOS</div>
+    <div class="tema" onclick="mostrarArquivos('tema6')">📚CURSOS VARIADOS</div>
+    <div class="tema" onclick="mostrarArquivos('tema7')">📚ENCICLOPEDIA BIBLICA</div>
+    <div class="tema" onclick="mostrarArquivos('tema8')">📚LIVROS CRISTÃOS</div>
+    <div class="tema" onclick="mostrarArquivos('tema9')">📚LIVROS TEOLOGICOS</div>
+    <div class="tema" onclick="mostrarArquivos('tema10')">📚MANUAIS BIBLICOS</div>
+    <div class="tema" onclick="mostrarArquivos('tema11')">📚TUDO PARA PREGADORES</div>
+  </div>
+
+  <!-- Área de visualização -->
+  <div class="viewer" id="viewer">
+    <p>Selecione um tema para ver os arquivos.</p>
+  </div>
+
+  <script>
+  const arquivosPorTema = {
+    tema1: [
+      { tipo: 'pdf', titulo: 'Equações', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/AW8738.pdf' },
+            { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/AW8738.pdf' },
+         { tipo: 'pdf', titulo: 'Equações', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/G10-PLAY-SCH.pdf' },
+      { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A72 AMOLED.pdf' },
+      { tipo: 'pdf', titulo: 'Equações', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A70 LAYOUT.pdf' },
+      { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A51-LAY.pdf' },
+      { tipo: 'pdf', titulo: 'Equações', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/AW8738.pdf' },
+      { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A450CG.pdf' },
+      { tipo: 'pdf', titulo: 'Equações', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A33-SCH.pdf' },
+      { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A22-SCH.pdf' },
+      { tipo: 'pdf', titulo: 'Equações', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A02s-SM-A025F-LAYOUT.pdf' },
+      { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/3A layout.pdf' },
+      { tipo: 'img', titulo: 'Gráfico', src: 'grafico.jpg' }
+       
+    ],
+    tema2: [
+      { tipo: 'pdf', titulo: 'Física', src: 'fisica.pdf' },
+      { tipo: 'img', titulo: 'Experimento', src: 'experimento.png' }
+    ],
+    tema3: [
+      { tipo: 'pdf', titulo: 'Segunda Guerra', src: 'guerra.pdf' },
+      { tipo: 'img', titulo: 'Mapa', src: 'mapa.png' },
+            { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/AW8738.pdf' },
+         { tipo: 'pdf', titulo: 'Equações', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/G10-PLAY-SCH.pdf' },
+      { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A72 AMOLED.pdf' },
+      { tipo: 'pdf', titulo: 'Equações', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A70 LAYOUT.pdf' },
+      { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A51-LAY.pdf' },
+      { tipo: 'pdf', titulo: 'Equações', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/AW8738.pdf' },
+      { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A450CG.pdf' },
+      { tipo: 'pdf', titulo: 'Equações', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A33-SCH.pdf' },
+      { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A22-SCH.pdf' },
+      { tipo: 'pdf', titulo: 'Equações', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/A02s-SM-A025F-LAYOUT.pdf' },
+      { tipo: 'pdf', titulo: 'Geometria', src: 'https://raw.githubusercontent.com/bizoonydb/digital-board/main/3A layout.pdf' },
+      { tipo: 'img', titulo: 'Gráfico', src: 'grafico.jpg' }
+    ]
+  };
+
+  let tabCount = 0;
+  const iframes = new Map();
+  let temaAtual = null;
+
+
+  
+async function renderPdfThumbnail(canvas, src) {
+  // Verifica se já tem thumbnail salvo no localStorage
+  const cachedImage = localStorage.getItem(src);
+  if (cachedImage) {
+    // Cria img e adiciona no lugar do canvas
+    const img = document.createElement('img');
+    img.src = cachedImage;
+    img.style.width = '100%';
+    img.style.height = '260px';
+    canvas.parentNode.replaceChild(img, canvas);
+    return;
+  }
+
+  try {
+    const pdf = await pdfjsLib.getDocument(src).promise;
+    const page = await pdf.getPage(1);
+    const context = canvas.getContext('2d');
+    const viewport = page.getViewport({ scale: 1 });
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: context, viewport }).promise;
+
+    // Depois de renderizar, salva no localStorage
+    const dataUrl = canvas.toDataURL('image/png');
+    try {
+      localStorage.setItem(src, dataUrl);
+    } catch(e) {
+      console.warn('Não foi possível salvar a thumbnail no localStorage:', e);
+    }
+  } catch (error) {
+    canvas.remove();
+    canvas.parentElement.innerHTML = `<p style="color:red;">Erro ao carregar PDF</p>`;
+  }
+}
+
+function mostrarArquivos(tema) {
+  const viewer = document.getElementById('viewer');
+  viewer.innerHTML = '';
+
+  let arquivos = [];
+
+  if (tema === 'todos') {
+    // Junta todos os arquivos de todos os temas
+    for (const key in arquivosPorTema) {
+      arquivos = arquivos.concat(arquivosPorTema[key]);
+    }
+  } else {
+    arquivos = arquivosPorTema[tema] || [];
+  }
+
+  if (arquivos.length === 0) {
+    viewer.innerHTML = '<p>Nenhum arquivo disponível para este tema.</p>';
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const canvas = entry.target.querySelector('canvas');
+        const src = canvas.dataset.src;
+        renderPdfThumbnail(canvas, src);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: "0px 0px 100px 0px" });
+
+  arquivos.forEach(arquivo => {
+    const div = document.createElement('div');
+    div.className = 'preview';
+    if (arquivo.tipo === 'pdf') {
+      div.style.cursor = 'pointer';
+      div.onclick = () => abrirPdf(arquivo.src, arquivo.titulo);
+
+      div.innerHTML = `
+        <canvas data-src="${arquivo.src}" style="width: 100%; height: 260px; background: #f0f0f0;"></canvas>
+        <div class="preview-title">${arquivo.titulo}</div>
+      `;
+      viewer.appendChild(div);
+      observer.observe(div);
+    } else if (arquivo.tipo === 'img') {
+      div.innerHTML = `
+        <img src="${arquivo.src}" alt="${arquivo.titulo}" />
+        <div class="preview-title">${arquivo.titulo}</div>
+      `;
+      viewer.appendChild(div);
+
+    }
+  });
+}
+
+  function abrirPdf(fileUrl, titulo) {
+    const tabId = `tab${tabCount}`;
+    const fileName = decodeURIComponent(fileUrl.substring(fileUrl.lastIndexOf('/') + 1));
+
+    const tab = document.createElement('div');
+    tab.className = 'tab';
+    tab.id = tabId;
+    tab.style.cssText = "padding: 4px 10px; background: #2a2a2a; border-radius: 5px; cursor: pointer;";
+    tab.innerHTML = `
+      <span>${fileName}</span>
+      <span class="close-btn" style="margin-left: 8px; color: red; cursor: pointer;">×</span>
+    `;
+    tab.onclick = () => switchTab(tabId);
+
+    tab.querySelector('.close-btn').onclick = (e) => {
+      e.stopPropagation();
+      closeTab(tabId);
+    };
+
+    document.getElementById('tabContainer').appendChild(tab);
+
+    const iframe = document.createElement('iframe');
+    iframe.src = `http://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(fileUrl)}`;
+    iframe.id = `iframe-${tabId}`;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    iframe.classList.add('hidden');
+
+    document.getElementById('iframeContainer').appendChild(iframe);
+    iframes.set(tabId, iframe);
+
+    document.getElementById('tabContainer').style.display = 'flex';
+    document.getElementById('iframeContainer').style.display = 'block';
+
+    switchTab(tabId);
+    tabCount++;
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('#tabContainer .tab').forEach(tab => tab.style.background = '#2a2a2a');
+    document.getElementById(tabId).style.background = '#444';
+
+    iframes.forEach(iframe => iframe.classList.add('hidden'));
+    iframes.get(tabId).classList.remove('hidden');
+  }
+
+  async function closeTab(tabId) {
+    const tab = document.getElementById(tabId);
+    const wasActive = tab.style.background === 'rgb(68, 68, 68)';
+    tab.remove();
+
+    const iframe = iframes.get(tabId);
+    iframe.remove();
+    iframes.delete(tabId);
+
+    if (wasActive && iframes.size > 0) {
+      const nextTabId = Array.from(iframes.keys())[0];
+      switchTab(nextTabId);
+    } else if (iframes.size === 0) {
+      document.getElementById('iframeContainer').style.display = 'none';
+      document.getElementById('tabContainer').style.display = 'none';
+    }
+
+   
+  }
+</script>
+
+
+
+</body>
+</html>
